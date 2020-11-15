@@ -1,39 +1,25 @@
 import pygame
 from boardgame import Board
 from player import Player
-
-
-# Define some colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-
-# Define board/grid size
-GRID_NUM = 10 # each row/colum
-GRID_SIZE = 50
-GRID_MARGIN = 3
-BOARD_SIZE = GRID_NUM * GRID_SIZE + GRID_NUM * GRID_MARGIN
-RATIO = 1/3
-
-board = Board(GRID_NUM, RATIO)
-searcher = Player("Searcher", 0, 0)
-monster = Player("Monster", GRID_NUM-1, GRID_NUM-1)
-board.board[searcher.row][searcher.col].players.append(searcher.name)
-board.board[monster.row][monster.col].players.append(monster.name)
-searcher.collectCoin(board)
-
-# Create a 2 dimensional array. A two dimensional
-boardview = [ [GREEN if board.board[row][col].coins == 1 else WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
-for row in boardview: print(row)
-boardview[searcher.row][searcher.col] = BLUE
-boardview[monster.row][monster.col] = RED
-
+from config import *
 # Initialize pygame
 pygame.init()
 screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE))
 pygame.display.set_caption("Treasure Search Adventure")
+
+board = Board(GRID_NUM, RATIO)
+searcher = Player("Searcher", 0, 0,"./searcher.png",0,0)
+monster = Player("Monster", GRID_NUM-1, GRID_NUM-1,"./monster.jpg",BOARD_SIZE-50,BOARD_SIZE-50)
+board.board[searcher.row][searcher.col].players.append(searcher.name)
+board.board[monster.row][monster.col].players.append(monster.name)
+
+players = [searcher,monster]
+global curPlayer
+curPlayer = 0
+
+# Create a 2 dimensional array. A two dimensional
+boardview = [ [GOLD if board.board[row][col].coins == 1 else WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
+searcher.collectCoin(board,boardview)
 
 # Set font/text
 font = pygame.font.SysFont('arial', 20)
@@ -43,6 +29,16 @@ text = font.render('Hello', True, BLACK)
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
+
+def moveInput(player):
+    global curPlayer
+    if players[curPlayer] != player: return
+    print("{}'s turn.".format(player.name))
+    m = event.key
+    if player.move(m,board): 
+        player.collectCoin(board,boardview)
+        curPlayer = (curPlayer+1) % len(players)
+    else: print("Invalid Move")
 
 done = False
 while not done:
@@ -56,30 +52,8 @@ while not done:
             row = pos[1] // (GRID_SIZE + GRID_MARGIN)
             print("Click ", pos, "Grid coordinates: ", row, col)
         elif event.type == pygame.KEYDOWN:
-            ### searcher is moving
-            if event.key in (pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT):
-                boardview[searcher.row][searcher.col] = WHITE
-                if event.key == pygame.K_UP:
-                    searcher.moveUp(board)
-                elif event.key == pygame.K_DOWN:
-                    searcher.moveDown(board)
-                elif event.key == pygame.K_LEFT:
-                    searcher.moveLeft(board)
-                elif event.key == pygame.K_RIGHT:
-                    searcher.moveRight(board)
-                boardview[searcher.row][searcher.col] = BLUE
-            elif event.key in (pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d):
-                boardview[monster.row][monster.col] = WHITE
-                if event.key == pygame.K_w:
-                    monster.moveUp(board)
-                elif event.key == pygame.K_s:
-                    monster.moveDown(board)
-                elif event.key == pygame.K_a:
-                    monster.moveLeft(board)
-                elif event.key == pygame.K_d:
-                    monster.moveRight(board)
-                boardview[monster.row][monster.col] = RED
-
+            ### player is moving
+            moveInput(players[curPlayer])
 
     # Set the screen background
     screen.fill(BLACK)
@@ -94,6 +68,9 @@ while not done:
                               (GRID_MARGIN + GRID_SIZE) * row + GRID_MARGIN,
                               GRID_SIZE,
                               GRID_SIZE])
+    searcher.draw(screen)
+    monster.draw(screen)
+    pygame.display.update()
 
     # Limit to 60 frames per second
     clock.tick(60)
