@@ -1,4 +1,5 @@
 import pygame
+import random
 from boardgame import Board
 from player import Player
 from config import *
@@ -33,10 +34,20 @@ def moveInput(player):
     m = event.key
     if player.move(m,board): 
         player.collectCoin(board,boardview)
-        monsterMove(player)
+        if player.coins % 2 == 0:
+            monsterSmartMove(player)
+        else:
+            monsterRandomMove()
     else: print("Invalid Move")
 
-def monsterMove(player):
+def monsterRandomMove():
+    rand = random.randint(0, 3)
+    if rand == 0: monster.moveUp(board)
+    elif rand == 1: monster.moveDown(board)
+    elif rand == 2: monster.moveLeft(board)
+    elif rand == 3: monster.moveRight(board)
+
+def monsterSmartMove(player):
     if abs(monster.row - player.row) > abs(monster.col - player.col): # monster move on x axis
         if monster.row < player.row: monster.moveDown(board)
         else: monster.moveUp(board)
