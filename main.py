@@ -2,9 +2,10 @@ import pygame
 from boardgame import Board
 from player import Player
 from config import *
+
 # Initialize pygame
 pygame.init()
-screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE))
+screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE + SCORE_HEIGHT))
 pygame.display.set_caption("Treasure Search Adventure")
 
 board = Board(GRID_NUM, RATIO)
@@ -19,13 +20,14 @@ curPlayer = 0
 
 # Create a 2 dimensional array. A two dimensional
 boardview = [ [GOLD if board.board[row][col].coins == 1 else WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
+scoreview = pygame.Rect(GRID_MARGIN, (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN, BOARD_SIZE, SCORE_HEIGHT)
 searcher.collectCoin(board,boardview)
 
-# Set font/text
+# Set font/text for coins
 font = pygame.font.SysFont('arial', 20)
-text = font.render('Hello', True, BLACK)
-#rect = text.get_rect()
-#screen.blit(text, ((GRID_MARGIN + GRID_SIZE) * col + GRID_MARGIN, (GRID_MARGIN + GRID_SIZE) * row + GRID_MARGIN))
+def updateCoins(coins=0):
+    text = font.render('Coins: {}'.format(coins), True, BLACK)
+    screen.blit(text, [10, (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 2, BOARD_SIZE, SCORE_HEIGHT])
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
@@ -68,9 +70,15 @@ while not done:
                               (GRID_MARGIN + GRID_SIZE) * row + GRID_MARGIN,
                               GRID_SIZE,
                               GRID_SIZE])
+
+    # Draw score board 
+    pygame.draw.rect(screen, WHITE, scoreview)
+    updateCoins(searcher.coins)
+
+    # Draw searcher and monster
     searcher.draw(screen)
     monster.draw(screen)
-    pygame.display.update()
+    #pygame.display.update()
 
     # Limit to 60 frames per second
     clock.tick(60)
