@@ -26,15 +26,21 @@ font = pygame.font.SysFont('arial', 20)
 def updateCoins(coins=0):
     text = font.render('Coins: {}'.format(coins), True, BLACK)
     screen.blit(text, [10, (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 2, BOARD_SIZE, SCORE_HEIGHT])
+def updateResult(msg):
+    text = font.render(msg, True, BLACK)
+    screen.blit(text, [10, (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 10, BOARD_SIZE, SCORE_HEIGHT])
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
+
+def distanceToMonster(player):
+    return abs(player.row - monster.row) + abs(player.col - monster.col)
 
 def moveInput(player):
     m = event.key
     if player.move(m,board): 
         player.collectCoin(board,boardview)
-        if player.coins % 2 == 0:
+        if distanceToMonster(player) <= GRID_NUM * 2 // 4:
             monsterSmartMove(player)
         else:
             monsterRandomMove()
@@ -88,10 +94,16 @@ while not done:
     pygame.draw.rect(screen, WHITE, scoreview)
     updateCoins(searcher.coins)
 
+    ### player meets monster
+    if searcher.row == monster.row and searcher.col == monster.col:
+        updateResult('You lose!')
+    ### player collected all the coins
+    if searcher.coins == int(GRID_NUM * GRID_NUM * RATIO):
+        updateResult('You win!')
+
     # Draw searcher and monster
     searcher.draw(screen)
     monster.draw(screen)
-    #pygame.display.update()
 
     # Limit to 60 frames per second
     clock.tick(60)
