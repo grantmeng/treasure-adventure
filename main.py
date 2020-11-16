@@ -13,10 +13,7 @@ searcher = Player("Searcher", 0, 0,"./searcher.png",0,0)
 monster = Player("Monster", GRID_NUM-1, GRID_NUM-1,"./monster.jpg",BOARD_SIZE-50,BOARD_SIZE-50)
 board.board[searcher.row][searcher.col].players.append(searcher.name)
 board.board[monster.row][monster.col].players.append(monster.name)
-
 players = [searcher,monster]
-global curPlayer
-curPlayer = 0
 
 # Create a 2 dimensional array. A two dimensional
 boardview = [ [GOLD if board.board[row][col].coins == 1 else WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
@@ -33,14 +30,19 @@ def updateCoins(coins=0):
 clock = pygame.time.Clock()
 
 def moveInput(player):
-    global curPlayer
-    if players[curPlayer] != player: return
-    print("{}'s turn.".format(player.name))
     m = event.key
     if player.move(m,board): 
         player.collectCoin(board,boardview)
-        curPlayer = (curPlayer+1) % len(players)
+        monsterMove(player)
     else: print("Invalid Move")
+
+def monsterMove(player):
+    if abs(monster.row - player.row) > abs(monster.col - player.col): # monster move on x axis
+        if monster.row < player.row: monster.moveDown(board)
+        else: monster.moveUp(board)
+    else: # monster move on y axis
+        if monster.col < player.col: monster.moveRight(board)
+        else: monster.moveLeft(board)
 
 done = False
 while not done:
@@ -55,7 +57,7 @@ while not done:
             print("Click ", pos, "Grid coordinates: ", row, col)
         elif event.type == pygame.KEYDOWN:
             ### player is moving
-            moveInput(players[curPlayer])
+            moveInput(searcher)
 
     # Set the screen background
     screen.fill(BLACK)
