@@ -5,6 +5,7 @@ import pygame_widgets as pw
 import random
 from boardgame import Board
 from player import Player
+from coin import Coin
 from config import *
 
 # Initialize pygame
@@ -20,26 +21,34 @@ def updateCoins(coins=0):
 def updateResult(msg):
     text = font.render(msg, True, BLACK)
     screen.blit(text, [10, (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 10, BOARD_SIZE, SCORE_HEIGHT])
+def drawCoin(rect):
+    coin = pygame.transform.scale(pygame.image.load('./coin.jpg'),(GRID_SIZE,GRID_SIZE))
+    screen.blit(coin, rect)
 
 # Restart button
 restart = pw.Button(
-        screen, GRID_SIZE * (GRID_NUM-2), (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 4, 90, 30, text='Restart',
+        screen, GRID_SIZE * (GRID_NUM-3), (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 4, 90, 30, text='Restart',
         fontSize=20, margin=10, inactiveColour=GREEN, pressedColour=BLUE, radius=5,
         onClick=lambda: start())
+# Quit button
+quit = pw.Button(
+        screen, GRID_SIZE * (GRID_NUM-1), (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN * 4, 50, 30, text='Quit',
+        fontSize=20, margin=10, inactiveColour=GREEN, pressedColour=BLUE, radius=5,
+        onClick=lambda: exit())
 
 def start():
     # Create board and players
     board = Board(GRID_NUM, RATIO)
-    searcher = Player("Searcher", 0, 0,"./searcher.png",0,0)
+    searcher = Player("Searcher", 0, 0,"./searcher.png",2,0)
     monster = Player("Monster", GRID_NUM-1, GRID_NUM-1,"./monster.jpg",BOARD_SIZE-50,BOARD_SIZE-50)
     board.board[searcher.row][searcher.col].players.append(searcher.name)
     board.board[monster.row][monster.col].players.append(monster.name)
     players = [searcher,monster]
 
     # Create board view
-    boardview = [ [GOLD if board.board[row][col].coins == 1 else WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
+    boardview = [ [WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
     scoreview = pygame.Rect(GRID_MARGIN, (GRID_SIZE+GRID_MARGIN) * GRID_NUM + GRID_MARGIN, BOARD_SIZE, SCORE_HEIGHT)
-    searcher.collectCoin(board,boardview)
+    searcher.collectCoin(board)
 
     def distanceToMonster(player):
         return abs(player.row - monster.row) + abs(player.col - monster.col)
@@ -62,7 +71,17 @@ def start():
     def moveInput(player):
         m = event.key
         if player.move(m,board): 
-            player.collectCoin(board,boardview)
+            ### player meets monster
+            if player.row == monster.row and player.col == monster.col:
+                updateResult('You lose!')
+                restart.draw()
+                return
+            player.collectCoin(board)
+            ### player collected all the coins
+            if searcher.coins == int(GRID_NUM * GRID_NUM * RATIO):
+                updateResult('You win!')
+                restart.draw()
+                return
             if distanceToMonster(player) <= GRID_NUM * 2 // 4:
                 monsterSmartMove(player)
             else: monsterRandomMove()
@@ -91,35 +110,43 @@ def start():
         # Set the screen background
         screen.fill(BLACK)
 
+        # Restart listener
+        restart.listen(pygame.event.get())
+        # Quit listener
+        quit.listen(pygame.event.get())
+
         # Draw the board
         for row in range(GRID_NUM):
             for col in range(GRID_NUM):
-                color = boardview[row][col]
                 pygame.draw.rect(screen,
-                                 color,
+                                 WHITE,
                                  [(GRID_MARGIN + GRID_SIZE) * col + GRID_MARGIN,
                                   (GRID_MARGIN + GRID_SIZE) * row + GRID_MARGIN,
                                   GRID_SIZE,
                                   GRID_SIZE])
+                if board.board[row][col].coins:
+                    coin = Coin(row, col, "./coin.jpg", (GRID_MARGIN+GRID_SIZE)*col+GRID_MARGIN, (GRID_MARGIN+GRID_SIZE)*row+GRID_MARGIN)
+                    coin.draw(screen)
 
-        # Draw score board 
+        # Draw searcher and monster
+        searcher.draw(screen)
+        monster.draw(screen)
+
+        # Draw score board and quit button 
         pygame.draw.rect(screen, WHITE, scoreview)
         updateCoins(searcher.coins)
+        quit.draw()
 
         ### player meets monster
         if searcher.row == monster.row and searcher.col == monster.col:
             updateResult('You lose!')
             restart.draw()
+            quit.draw()
         ### player collected all the coins
         elif searcher.coins == int(GRID_NUM * GRID_NUM * RATIO):
             updateResult('You win!')
             restart.draw()
-
-        restart.listen(pygame.event.get())
-
-        # Draw searcher and monster
-        searcher.draw(screen)
-        monster.draw(screen)
+            quit.draw()
 
         # Limit to 60 frames per second
         clock.tick(60)
