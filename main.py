@@ -44,6 +44,7 @@ quit = pw.Button(
         fontSize=20, margin=10, inactiveColour=GREEN, pressedColour=BLUE, radius=5,
         onClick=lambda: exit())
 
+
 def start():
     # Create board and players
     board = Board(GRID_NUM, RATIO)
@@ -122,7 +123,6 @@ def start():
             elif event.type == pygame.KEYDOWN:
                 ### player is moving
                 moveInput(searcher)
-                if done: break
 
         # Set the screen background
         screen.fill(BLACK)
