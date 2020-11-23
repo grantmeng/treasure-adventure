@@ -5,6 +5,8 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GOLD = (255, 255, 100, 255)
+PINK = (255, 100, 180)
+GRAY = (127, 127, 127)
 
 # Define board/grid size
 GRID_NUM = 10 # each row/colum

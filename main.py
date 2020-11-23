@@ -17,7 +17,8 @@ pygame.display.set_caption("Treasure Search Adventure")
 # Sounds
 pygame.mixer.init()
 bg_sound = pygame.mixer.Sound('bg.ogg')
-#bg_sound.play()
+#bg_sound.play(-1) # infinite play
+#bg_sound.fadeout(5000) # fade out in 5 sec
 eat_sound = pygame.mixer.Sound('eat.ogg')
 win_sound = pygame.mixer.Sound('win.ogg')
 
