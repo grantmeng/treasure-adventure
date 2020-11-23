@@ -2,6 +2,7 @@
 
 import pygame
 import pygame_widgets as pw
+import os
 import random
 from boardgame import Board
 from player import Player
@@ -12,6 +13,13 @@ from config import *
 pygame.init()
 screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE + SCORE_HEIGHT))
 pygame.display.set_caption("Treasure Search Adventure")
+
+# Sounds
+pygame.mixer.init()
+bg_sound = pygame.mixer.Sound('bg.ogg')
+#bg_sound.play()
+eat_sound = pygame.mixer.Sound('eat.ogg')
+win_sound = pygame.mixer.Sound('win.ogg')
 
 # Set font/text for coins
 font = pygame.font.SysFont('arial', 20)
@@ -44,6 +52,7 @@ def start():
     board.board[searcher.row][searcher.col].players.append(searcher.name)
     board.board[monster.row][monster.col].players.append(monster.name)
     players = [searcher,monster]
+    done = False
 
     # Create board view
     boardview = [ [WHITE for col in range(GRID_NUM)] for row in range(GRID_NUM) ]
@@ -73,24 +82,31 @@ def start():
         if player.move(m,board): 
             ### player meets monster
             if player.row == monster.row and player.col == monster.col:
-                updateResult('You lose!')
-                restart.draw()
+                monsterEatPlayer(player)
                 return
             player.collectCoin(board)
             ### player collected all the coins
-            if searcher.coins == int(GRID_NUM * GRID_NUM * RATIO):
+            if searcher.coins >= int(GRID_NUM * GRID_NUM * RATIO):
+                win_sound.play()
                 updateResult('You win!')
                 restart.draw()
                 return
             if distanceToMonster(player) <= GRID_NUM * 2 // 4:
                 monsterSmartMove(player)
             else: monsterRandomMove()
+            ### player meets monster
+            if player.row == monster.row and player.col == monster.col:
+                monsterEatPlayer(player)
         else: print("Invalid Move")
+
+    def monsterEatPlayer(player):
+        eat_sound.play()
+        updateResult('You lose!')
+        restart.draw()
 
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
 
-    done = False
     while not done:
         for event in pygame.event.get():  # User did something
             if event.type == pygame.QUIT:
@@ -106,6 +122,7 @@ def start():
             elif event.type == pygame.KEYDOWN:
                 ### player is moving
                 moveInput(searcher)
+                if done: break
 
         # Set the screen background
         screen.fill(BLACK)
@@ -141,12 +158,10 @@ def start():
         if searcher.row == monster.row and searcher.col == monster.col:
             updateResult('You lose!')
             restart.draw()
-            quit.draw()
         ### player collected all the coins
-        elif searcher.coins == int(GRID_NUM * GRID_NUM * RATIO):
+        elif searcher.coins >= int(GRID_NUM * GRID_NUM * RATIO):
             updateResult('You win!')
             restart.draw()
-            quit.draw()
 
         # Limit to 60 frames per second
         clock.tick(60)

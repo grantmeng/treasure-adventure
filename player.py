@@ -1,6 +1,11 @@
 import pygame
 from config import *
 
+# Sounds
+pygame.mixer.init()
+coin_sound = pygame.mixer.Sound('coin.ogg')
+step_sound = pygame.mixer.Sound('step.ogg')
+
 class Player(pygame.sprite.Sprite):
     def __init__(self,name,row,col,filename,dx,dy):
         pygame.sprite.Sprite.__init__(self)
@@ -48,7 +53,8 @@ class Player(pygame.sprite.Sprite):
         board.board[self.row][self.col].players.append(self.name)
         return True
 
-    def move(self,m,board): 
+    def move(self,m,board):
+        step_sound.play()
         if m == pygame.K_UP:
             return self.moveUp(board)
         elif m == pygame.K_DOWN:
@@ -61,8 +67,10 @@ class Player(pygame.sprite.Sprite):
 
     def collectCoin(self,board):
         if self.name == "Searcher":
-            self.coins += board.board[self.row][self.col].coins
-            board.board[self.row][self.col].coins = 0
+            if board.board[self.row][self.col].coins:
+                self.coins += board.board[self.row][self.col].coins
+                board.board[self.row][self.col].coins = 0
+                coin_sound.play()
 
     def __str__(self):
         return '{}: {}'.format(self.name,self.coins)
