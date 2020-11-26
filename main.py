@@ -155,7 +155,7 @@ def start():
         elif searcher.row == monster.row and searcher.col == monster.col:
             updateResult('You lose!')
             end = True
-        #test 
+        #testt 
 
         # Limit to 60 frames per second
         clock.tick(60)
