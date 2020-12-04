@@ -121,6 +121,7 @@ def start():
                     moveInput(searcher)
                     for n in curshow:
                         board.board[n[0]][n[1]].show = False
+                    curshow = []
 
         # Set the screen background
         screen.fill(BLACK)
