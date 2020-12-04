@@ -20,7 +20,7 @@ class Player(pygame.sprite.Sprite):
     
     def draw(self,screen):
         screen.blit(self.image, self.rect)
-
+        
     def moveUp(self,board):
         if self.row == 0: return False
         board.board[self.row][self.col].players.remove(self.name)

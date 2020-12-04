@@ -88,6 +88,7 @@ def start():
                 eat_sound.play()
                 return
             player.collectCoin(board)
+            ### player collected all the coins
             if distanceToMonster(player) <= GRID_NUM * 2 // 4:
                 monsterSmartMove(player)
             else: monsterRandomMove()
@@ -99,28 +100,22 @@ def start():
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
     end = False
-    max = 3
-    curshow = []
     while not done:
         for event in pygame.event.get():  # User did something
             if event.type == pygame.QUIT:
                 done = True
                 break
             if not end: 
-                if event.type == pygame.MOUSEBUTTONDOWN and len(curshow) != max:
-                    # User clicks the mouse. Reveal the tile underneath
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # User clicks the mouse. Get the position
                     pos = pygame.mouse.get_pos()
                     # Change the x/y screen coordinates to grid coordinates
                     col = pos[0] // (GRID_SIZE + GRID_MARGIN)
                     row = pos[1] // (GRID_SIZE + GRID_MARGIN)
-                    if row < GRID_NUM and col < GRID_NUM:
-                        curshow.append([row,col])
-                        board.board[row][col].show = True
+                    print("Click ", pos, "Grid coordinates: ", row, col)
                 elif event.type == pygame.KEYDOWN:
                     ### player is moving
                     moveInput(searcher)
-                    for n in curshow:
-                        board.board[n[0]][n[1]].show = False
 
         # Set the screen background
         screen.fill(BLACK)
@@ -139,10 +134,9 @@ def start():
                                   (GRID_MARGIN + GRID_SIZE) * row + GRID_MARGIN,
                                   GRID_SIZE,
                                   GRID_SIZE])
-                if board.board[row][col].show:
-                    if board.board[row][col].coins:
-                        coin = Coin(row, col, "./coin.jpg", (GRID_MARGIN+GRID_SIZE)*col+GRID_MARGIN, (GRID_MARGIN+GRID_SIZE)*row+GRID_MARGIN)
-                        coin.draw(screen)
+                if board.board[row][col].coins:
+                    coin = Coin(row, col, "./coin.jpg", (GRID_MARGIN+GRID_SIZE)*col+GRID_MARGIN, (GRID_MARGIN+GRID_SIZE)*row+GRID_MARGIN)
+                    coin.draw(screen)
 
         # Draw searcher and monster
         searcher.draw(screen)
@@ -151,17 +145,17 @@ def start():
         # Draw score board and quit button 
         pygame.draw.rect(screen, WHITE, scoreview)
         updateCoins(searcher.coins)
-        restart.draw()
         quit.draw()
-
+        restart.draw()
         ### player collected all the coins
-        if searcher.coins >= int(GRID_NUM * GRID_NUM * RATIO):
+        if searcher.coins == 5: #int(GRID_NUM * GRID_NUM * RATIO):
             updateResult('You win!')
             end = True
         ### player meets monster
         elif searcher.row == monster.row and searcher.col == monster.col:
             updateResult('You lose!')
             end = True
+        #testt 
 
         # Limit to 60 frames per second
         clock.tick(60)
