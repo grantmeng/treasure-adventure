@@ -21,6 +21,7 @@ class Board:
     def __str__(self):
         return str(DataFrame(self.board))
 
+
         
 
 
