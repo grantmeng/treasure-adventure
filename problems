@@ -1,2 +1,3 @@
-1. Need to display monster, not player when player loses. 
-2. Transfer code in main to OOP. 
+1. Monster sound effect not playing
+2. Need to fix so that pressing restart button will not trigger tile reveal
+3. For some reason, when a tile is pressed, it can reveal coin, but when pressed again, it doesn't reveal coin

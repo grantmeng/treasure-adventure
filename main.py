@@ -50,7 +50,7 @@ quit = pw.Button(
 def start():
     # Create board and players
     board = Board(GRID_NUM, RATIO)
-    searcher = Player("Searcher", 0, 0,"./searcher.png",3,3)
+    searcher = Player("Searcher", 0, 0,"./searcher.png",2,0)
     monster = Player("Monster", GRID_NUM-1, GRID_NUM-1,"./monster.jpg",BOARD_SIZE-50,BOARD_SIZE-50)
     board.board[searcher.row][searcher.col].players.append(searcher.name)
     board.board[monster.row][monster.col].players.append(monster.name)
@@ -113,10 +113,10 @@ def start():
                     # Change the x/y screen coordinates to grid coordinates
                     col = pos[0] // (GRID_SIZE + GRID_MARGIN)
                     row = pos[1] // (GRID_SIZE + GRID_MARGIN)
-                    if row < GRID_NUM and col < GRID_NUM and [row,col] not in curshow:
-                        curshow.append([row,col])   
+                    if row < GRID_NUM and col < GRID_NUM:
+                        curshow.append([row,col])
                         board.board[row][col].show = True
-                elif event.type == pygame.KEYDOWN and len(curshow) == 3: #may delete second condition for better user experience.
+                elif event.type == pygame.KEYDOWN:
                     ### player is moving
                     moveInput(searcher)
                     for n in curshow:
@@ -141,18 +141,14 @@ def start():
                                   GRID_SIZE,
                                   GRID_SIZE])
                 if board.board[row][col].show:
-                    #If both monster and coin, shows half and half picture
-                    if row == monster.row and col == monster.col and board.board[row][col].coins:
-                        coin = Coin(row, col, "./monstercoin.jpg", (GRID_MARGIN+GRID_SIZE)*col+GRID_MARGIN, (GRID_MARGIN+GRID_SIZE)*row+GRID_MARGIN)
-                        coin.draw(screen)  
-                    elif row == monster.row and col == monster.col: 
-                        monster.draw(screen)
-                    elif board.board[row][col].coins:
+                    if board.board[row][col].coins:
                         coin = Coin(row, col, "./coin.jpg", (GRID_MARGIN+GRID_SIZE)*col+GRID_MARGIN, (GRID_MARGIN+GRID_SIZE)*row+GRID_MARGIN)
-                        coin.draw(screen)       
-        # Draw searcher
+                        coin.draw(screen)
+
+        # Draw searcher and monster
         searcher.draw(screen)
-        
+        monster.draw(screen)
+
         # Draw score board and quit button 
         pygame.draw.rect(screen, WHITE, scoreview)
         updateCoins(searcher.coins)
@@ -160,7 +156,7 @@ def start():
         quit.draw()
 
         ### player collected all the coins
-        if searcher.coins >= int(GRID_NUM * GRID_NUM * RATIO * RATIO):
+        if searcher.coins >= int(GRID_NUM * GRID_NUM * RATIO):
             updateResult('You win!')
             end = True
         ### player meets monster
