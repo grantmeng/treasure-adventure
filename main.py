@@ -116,7 +116,7 @@ def start():
                     if row < GRID_NUM and col < GRID_NUM and [row,col] not in curshow:
                         curshow.append([row,col])   
                         board.board[row][col].show = True
-                elif event.type == pygame.KEYDOWN and len(curshow) == 3: #may delete second condition for better user experience.
+                elif event.type == pygame.KEYDOWN: #and len(curshow) == 3: #may delete second condition for better user experience.
                     ### player is moving
                     moveInput(searcher)
                     for n in curshow:
